@@ -6,11 +6,13 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, Me
 from pymongo import MongoClient
 from datetime import datetime, timedelta
 
+
 client = MongoClient('mongodb+srv://VAISHNAV:VAISHNAV@cluster0.sn8ij4b.mongodb.net/?retryWrites=true&w=majority')
 db = client['video_bot']  # Ensure 'video_bot' is your correct database name
 videos_db = db['videos']  # Collection for videos
 users_db = db['users']  # Collection for users
 redeem_db = db['redeem_codes']  # Collection for redeem codes
+
 
 # Bot Token & Admin Info
 BOT_TOKEN = '5583773090:AAFTZEaM7ZDQiFpLbE7TFne-s-ulZnm76fk'  # Replace with your bot token
@@ -142,44 +144,69 @@ async def get_videos(update: Update, context: CallbackContext) -> None:
         return
 
     # Reset the user limit if 24 hours have passed
-    if datetime.now() - user_data['last_reset'] > timedelta(days=1):
-        users_db.update_one({"user_id": user_id}, {"$set": {"videos_watched": 0, "last_reset": datetime.now()}})
+    if datetime.now() - user_data['last_reset'] > timedelta(hours=24):
+        users_db.update_one({"user_id": user_id}, {"$set": {"videos_watched": 0, "next_command_count": 0, "last_reset": datetime.now()}})
+        await query.message.reply_text("✅ Your video limit has been reset! You can now watch up to 10 videos again.")
 
-    video = videos_db.find_one({"index": user_data["video_index"]})
+    video_index = user_data.get('video_index', 1)
+    video_data = videos_db.find_one({'index': video_index})
 
-    if video:
-        video_file_id = video["video_file_id"]
-        await context.bot.send_video(chat_id=user_id, video=video_file_id)
-        users_db.update_one({"user_id": user_id}, {"$inc": {"videos_watched": 1, "video_index": 1}})
+    if video_data:
+        video_file_id = video_data['video_file_id']
+        next_button = InlineKeyboardButton("➡️ Next", callback_data='next_video')
+
+        keyboard = [[next_button]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.message.reply_video(video=video_file_id, reply_markup=reply_markup)
+        users_db.update_one({"user_id": user_id}, {"$inc": {"videos_watched": 1}, "$set": {"video_index": video_index}})
     else:
         await query.message.reply_text("❌ No more videos available.")
 
-# Error handler
+# Handle next video navigation
+async def button_handler(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    user_id = query.from_user.id
+    user_data = users_db.find_one({"user_id": user_id})
+
+    if query.data == 'next_video':
+        if user_data['redeemed'] or user_data['next_command_count'] < 10:
+            user_data['next_command_count'] += 1
+            user_data['video_index'] += 1
+        else:
+            await query.message.reply_text("🚫 You've reached the maximum number of next commands allowed. Contact admin for a redeem code.")
+            return
+
+        # Get the next video
+        video_index = user_data['video_index']
+        video_data = videos_db.find_one({'index': video_index})
+
+        if video_data:
+            video_file_id = video_data['video_file_id']
+            await query.message.reply_video(video=video_file_id, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("➡️ Next", callback_data='next_video')]]))
+            users_db.update_one({"user_id": user_id}, {"$set": {"video_index": video_index}})
+        else:
+            await query.message.reply_text("❌ No more videos available.")
+
+# Error handling
 async def error_handler(update: Update, context: CallbackContext) -> None:
     logger.warning(f'Update "{update}" caused error "{context.error}"')
-    if update and update.effective_chat:
-        await context.bot.send_message(chat_id=update.effective_chat.id, text="❌ An error occurred.")
-    else:
-        logger.error("Update or effective_chat is None, cannot send error message.")
+    await context.bot.send_message(chat_id=update.effective_chat.id, text="❌ An error occurred.")
 
-# Main function to run the bot
-async def main() -> None:
+def main() -> None:
     application = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # Handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("get_reed", generate_redeem_code))
     application.add_handler(CommandHandler("redeem", redeem_code))
     application.add_handler(CommandHandler("add", add_video))
     application.add_handler(CommandHandler("cmd", cmd_handler))
+    application.add_handler(MessageHandler(filters.VIDEO, handle_video))
     application.add_handler(CallbackQueryHandler(get_videos, pattern='get_videos'))
-    application.add_handler(MessageHandler(filters.Video(), handle_video))
-
-    # Error handler
+    application.add_handler(CallbackQueryHandler(button_handler, pattern='next_video'))
     application.add_error_handler(error_handler)
 
-    # Start the bot
-    await application.run_polling()
+    application.run_polling()
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()
