@@ -15,7 +15,7 @@ redeem_db = db['redeem_codes']  # Collection for redeem codes
 
 
 # Bot Token & Admin Info
-BOT_TOKEN = '5583773090:AAFTZEaM7ZDQiFpLbE7TFne-s-ulZnm76fk'  # Replace with your bot token
+BOT_TOKEN = '5583773090:AAHr7flM2h626zD50naoRMOb3yWkPwrtpP8'  # Replace with your bot token
 VIDEO_LIMIT = 10  # Maximum videos to watch without a redeem code
 ADMINS = [5079629749, 7013316052]  # Replace with your admin Telegram IDs
 
