@@ -1,2 +1,4 @@
 pymongo[srv]
 python-telegram-bot
+TgCrypto
+pyrogram
