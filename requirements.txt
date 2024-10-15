@@ -1,3 +1,3 @@
-python-telegram-bot==20.0  # Telegram bot framework
-pymongo==4.0                # MongoDB driver for Python
 python-dotenv==0.21.0       # To load environment variables from .env file
+python-telegram-bot==20.0
+pymongo==4.0.2
