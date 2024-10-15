@@ -194,4 +194,4 @@ async def button_handler(client: Client, query: CallbackQuery):
 
 if __name__ == "__main__":
     # Run the bot on port 8000, if needed
-    app.run(port=8000)
+    app.run(8000)
