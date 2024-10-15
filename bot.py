@@ -12,7 +12,7 @@ db = client['video_bot']
 videos_db = db['videos']
 users_db = db['users']
 redeem_db = db['redeem_codes']
-
+port = 8000
 # Bot Token & Admin Info
 API_ID = '27002519'  # Replace with your API ID
 API_HASH = '1033ee721101d78366b4ac46aadf3930'  # Replace with your API Hash
@@ -194,4 +194,4 @@ async def button_handler(client: Client, query: CallbackQuery):
 
 if __name__ == "__main__":
     # Run the bot on port 8000, if needed
-    app.run(8000)
+    app.run()
