@@ -173,7 +173,7 @@ async def main() -> None:
     application.add_handler(CommandHandler("add", add_video))
     application.add_handler(CommandHandler("cmd", cmd_handler))
     application.add_handler(CallbackQueryHandler(get_videos, pattern='get_videos'))
-    application.add_handler(MessageHandler(filters.Video, handle_video))
+    application.add_handler(MessageHandler(filters.Video(), handle_video))
 
     # Error handler
     application.add_error_handler(error_handler)
