@@ -6,12 +6,13 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, Me
 from pymongo import MongoClient
 from datetime import datetime, timedelta
 
-# MongoDB Setup
-client = 'mongodb+srv://VAISHNAV:VAISHNAV@cluster0.sn8ij4b.mongodb.net/?retryWrites=true&w=majority'
-db = client['video_bot']
-videos_db = db['videos']
-users_db = db['users']
-redeem_db = db['redeem_codes']
+
+client = MongoClient('mongodb+srv://VAISHNAV:VAISHNAV@cluster0.sn8ij4b.mongodb.net/?retryWrites=true&w=majority')
+db = client['video_bot']  # Ensure 'video_bot' is your correct database name
+videos_db = db['videos']  # Collection for videos
+users_db = db['users']  # Collection for users
+redeem_db = db['redeem_codes']  # Collection for redeem codes
+
 
 # Bot Token & Admin Info
 BOT_TOKEN = '5583773090:AAFTZEaM7ZDQiFpLbE7TFne-s-ulZnm76fk'  # Replace with your bot token
