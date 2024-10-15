@@ -193,4 +193,5 @@ async def button_handler(client: Client, query: CallbackQuery):
         await query.message.reply_text("❌ No more videos available.")
 
 if __name__ == "__main__":
-    app.run()
+    # Run the bot on port 8000, if needed
+    app.run(port=8000)
