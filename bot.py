@@ -7,7 +7,7 @@ from pymongo import MongoClient
 from datetime import datetime, timedelta
 
 # MongoDB Setup
-client = MongoClient('mongodb+srv://VAISHNAV:VAISHNAV@cluster0.sn8ij4b.mongodb.net/?retryWrites=true&w=majority')
+client = 'mongodb+srv://VAISHNAV:VAISHNAV@cluster0.sn8ij4b.mongodb.net/?retryWrites=true&w=majority'
 db = client['video_bot']
 videos_db = db['videos']
 users_db = db['users']
